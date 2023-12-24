@@ -3,12 +3,15 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2023-12-23 22:48
+ * @LastTime   : 2023-12-24 09:20
  * @desc       : 
 -->
 
 <script setup lang="ts">
   import { bitable } from '@lark-base-open/js-sdk';
+  import { useTheme } from '@/hooks/useTheme';
+
+  useTheme();
 
   const base = bitable.base;
 
@@ -45,41 +48,96 @@
   });
 
   async function goCheck() {
-    loading.value = true;
-    recordTableList.value = [];
-    recordValueList.value = [];
+    // recordTableList.value = [];
+    // recordValueList.value = [];
 
     // 获取已选择的 recordIdList
-    recordIdList.value = await bitable.ui.selectRecordIdList(tableIdData, viewIdData);
+    let _listRecordId = await bitable.ui.selectRecordIdList(tableIdData, viewIdData);
+    loading.value = true;
 
-    let _list = [];
-    for (const id of recordIdList.value) {
-      const recordValue = await table.getRecordById(id);
-      // 用于 addRecord
-      recordValueList.value.push(recordValue);
+    // 无勾选, 则保留上次记录
+    // if (_listRecord.length > 0) {
+    //   recordIdList.value = _listRecord;
+    // }
 
-      _list.push({
-        id,
-        name: recordValue.fields[fieldId].text || recordValue.fields[fieldId][0]?.text,
+    let _listRecord = [];
+    let _listTable = [];
+
+    const records = await table.getRecords({
+      pageSize: 5000,
+    });
+    records.records.forEach((item) => {
+      _listRecordId.forEach((recordId) => {
+        if (item.recordId === recordId) {
+          let recordValue = {
+            fields: item.fields,
+          };
+          let id = recordId;
+          _listRecord.push({ ...recordValue, recordId: id });
+
+          if (recordValue.fields[fieldId]) {
+            _listTable.push({
+              id,
+              name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
+            });
+          } else {
+            _listTable.push({
+              id,
+              name: '【暂无首列数据】',
+            });
+          }
+        }
+      });
+    });
+
+    // for (const id of _listRecordId) {
+    //   const recordValue = await table.getRecordById(id);
+    //   // debugger;
+
+    //   // 用于 addRecord
+    //   // recordValueList.value.push(recordValue);
+    //   _listRecord.push({ ...recordValue, recordId: id });
+
+    //   if (recordValue.fields[fieldId]) {
+    //     _listTable.push({
+    //       id,
+    //       name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
+    //     });
+    //   } else {
+    //     _listTable.push({
+    //       id,
+    //       name: '【暂无首列数据】',
+    //     });
+    //   }
+    // }
+
+    // 无勾选, 则保留上次记录
+    if (_listRecord.length > 0) {
+      recordValueList.value = _listRecord;
+    }
+
+    // 无勾选, 则保留上次记录
+    if (_listTable.length > 0) {
+      // 用于表格展示
+      // recordTableList.value.push(..._listTable);
+
+      // 覆盖
+      recordTableList.value = _listTable;
+      ElMessage({
+        type: 'success',
+        message: '勾选成功',
+        duration: 1500,
+        showClose: true,
       });
     }
 
-    // 用于表格展示
-    recordTableList.value.push(..._list);
-
     loading.value = false;
-    ElMessage({
-      type: 'success',
-      message: '勾选成功',
-      duration: 1500,
-      showClose: true,
-    });
   }
 
   async function handleDelete(index, id) {
     // 删除表格和记录 list
     recordTableList.value = recordTableList.value.filter((item) => item.id !== id);
-    recordValueList.value = recordValueList.value.filter((item) => item.fields[fieldId][0].id !== id);
+    recordValueList.value = recordValueList.value.filter((item) => item.recordId !== id);
   }
 
   const copyType = ref(1);
@@ -94,13 +152,26 @@
   const copyNumber = ref(1);
 
   async function confirm() {
+    if (recordValueList.value.length === 0) {
+      ElMessage({
+        type: 'warning',
+        message: '请勾选数据',
+        duration: 1500,
+        showClose: true,
+      });
+      return;
+    }
+
     loading.value = true;
 
+    let _list = [];
     // 复制次数
     for (let i = 0; i < copyNumber.value; i++) {
+      await _list.push(...toRaw(recordValueList.value));
       // 新增数据;
-      await table.addRecords(toRaw(recordValueList.value));
     }
+
+    await table.addRecords(_list);
 
     loading.value = false;
 
@@ -119,7 +190,7 @@
       <div class="tip">操作步骤:</div>
       <div class="tip">1. 点击【勾选记录】按钮，弹出窗口进行记录选择</div>
       <div class="tip">2. 在下方表格中确认需要复制的记录无误</div>
-      <div class="tip">3. 选择【复制模式】，可设置复制次数（多选模式）</div>
+      <div class="tip">3. 选择【复制模式】，可设置复制次数（多次模式）</div>
       <div class="tip">4. 点击【确认复制】按钮，完成复制操作</div>
     </div>
     <div
@@ -133,12 +204,11 @@
         <el-icon><CircleCheck /></el-icon>
         <span>勾选记录</span>
       </el-button>
-      <div class="tip">已选：{{ recordIdList.length }} 条数据</div>
+      <div class="select">已选：{{ recordTableList.length }} 条数据</div>
       <div class="table">
         <el-table
-          ref="tableRef"
           :data="recordTableList"
-          height="100%"
+          max-height="55vh"
           empty-text="暂无数据"
         >
           <el-table-column
@@ -199,8 +269,10 @@
       <el-button
         type="primary"
         @click="confirm"
-        >确认复制</el-button
       >
+        <el-icon><Aim /></el-icon>
+        <span>确认复制</span>
+      </el-button>
     </div>
   </div>
 </template>
@@ -210,23 +282,30 @@
   }
 
   .tips {
-    margin-bottom: 10px;
+    /* margin-bottom: 10px; */
   }
 
   .tip {
     font-size: 12px;
     color: #646a73;
-    margin-top: 5px;
+    margin-bottom: 5px;
+  }
+
+  .select {
+    font-size: 14px;
+    color: #302333;
+    margin-top: 10px;
   }
 
   .table {
-    margin-bottom: 14px;
+    /* height: 55vh; */
+    margin-bottom: 10px;
   }
 
   .label {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 
     .text {
       width: 70px;
@@ -238,5 +317,14 @@
 
   .fieldName {
     white-space: nowrap;
+  }
+
+  .no-data img {
+    width: 100%;
+    height: 100%;
+  }
+
+  .no-data span {
+    font-size: 16px;
   }
 </style>

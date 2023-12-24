@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-09-25 20:55
  * @LastAuthor : itchaox
- * @LastTime   : 2023-12-14 00:07
+ * @LastTime   : 2023-12-24 08:34
  * @desc       : 
 -->
 <script setup>
@@ -19,6 +19,7 @@
 <style scoped>
   main {
     padding: 1rem;
+    padding-top: 0.5rem;
     height: 95vh;
   }
   h4 {
