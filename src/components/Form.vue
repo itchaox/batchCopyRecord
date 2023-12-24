@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2023-12-24 09:20
+ * @LastTime   : 2023-12-24 09:28
  * @desc       : 
 -->
 
@@ -54,6 +54,11 @@
     // 获取已选择的 recordIdList
     let _listRecordId = await bitable.ui.selectRecordIdList(tableIdData, viewIdData);
     loading.value = true;
+
+    if (_listRecordId.length === 0) {
+      loading.value = false;
+      return;
+    }
 
     // 无勾选, 则保留上次记录
     // if (_listRecord.length > 0) {
