@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2023-12-24 09:28
+ * @LastTime   : 2023-12-24 10:36
  * @desc       : 
 -->
 
@@ -32,6 +32,10 @@
   let viewIdData;
   let fieldId;
 
+  // 特殊字段, 无法直接复制
+  // 19 查找引用; 20 公式; 1005 自动编号
+  const specialFieldList = ref([]);
+
   const loading = ref(false);
 
   onMounted(async () => {
@@ -43,6 +47,7 @@
     const view = await table.getViewById(viewId);
 
     const fieldMetaList = await view.getFieldMetaList();
+    specialFieldList.value = fieldMetaList.filter((item) => [19, 20, 1005].includes(item.type)).map((item) => item.id);
     fieldId = fieldMetaList[0].id;
     fieldName.value = fieldMetaList[0].name;
   });
@@ -74,13 +79,22 @@
     records.records.forEach((item) => {
       _listRecordId.forEach((recordId) => {
         if (item.recordId === recordId) {
+          // 查找引用、公式、自动编号的字段,无法直接复制需先删除
+          specialFieldList.value.forEach((fieldId) => {
+            // 使用 delete 操作符删除属性
+            if (item?.fields.hasOwnProperty(fieldId)) {
+              delete item?.fields[fieldId];
+            }
+          });
+
           let recordValue = {
             fields: item.fields,
           };
+
           let id = recordId;
           _listRecord.push({ ...recordValue, recordId: id });
 
-          if (recordValue.fields[fieldId]) {
+          if (recordValue?.fields[fieldId]) {
             _listTable.push({
               id,
               name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
@@ -94,27 +108,6 @@
         }
       });
     });
-
-    // for (const id of _listRecordId) {
-    //   const recordValue = await table.getRecordById(id);
-    //   // debugger;
-
-    //   // 用于 addRecord
-    //   // recordValueList.value.push(recordValue);
-    //   _listRecord.push({ ...recordValue, recordId: id });
-
-    //   if (recordValue.fields[fieldId]) {
-    //     _listTable.push({
-    //       id,
-    //       name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
-    //     });
-    //   } else {
-    //     _listTable.push({
-    //       id,
-    //       name: '【暂无首列数据】',
-    //     });
-    //   }
-    // }
 
     // 无勾选, 则保留上次记录
     if (_listRecord.length > 0) {
