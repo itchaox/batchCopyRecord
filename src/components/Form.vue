@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2023-12-24 10:36
+ * @LastTime   : 2023-12-26 01:12
  * @desc       : 
 -->
 
@@ -38,10 +38,39 @@
 
   const loading = ref(false);
 
+  // 是否开启邮件直接复制记录
+  const isOpenCopy = ref(false);
+
   onMounted(async () => {
     const { tableId, viewId } = await bitable.base.getSelection();
     tableIdData = tableId;
     viewIdData = viewId;
+
+    bitable.base.onSelectionChange(async (event) => {
+      let _recordId = event.data.recordId;
+      if (!isOpenCopy.value) return;
+
+      const records = await table.getRecords({
+        pageSize: 5000,
+      });
+      records.records.forEach(async (item) => {
+        if (item.recordId === _recordId) {
+          // 查找引用、公式、自动编号的字段,无法直接复制需先删除
+          specialFieldList.value.forEach((fieldId) => {
+            // 使用 delete 操作符删除属性
+            if (item?.fields.hasOwnProperty(fieldId)) {
+              delete item?.fields[fieldId];
+            }
+          });
+
+          let recordValue = {
+            fields: item.fields,
+          };
+
+          await table.addRecords([recordValue]);
+        }
+      });
+    });
 
     table = await bitable.base.getActiveTable();
     const view = await table.getViewById(viewId);
@@ -190,11 +219,17 @@
       <div class="tip">2. 在下方表格中确认需要复制的记录无误</div>
       <div class="tip">3. 选择【复制模式】，可设置复制次数（多次模式）</div>
       <div class="tip">4. 点击【确认复制】按钮，完成复制操作</div>
+      <div class="tip">Tips: 开启【点单元格复制记录】,点记录任一单元格,即复制</div>
     </div>
     <div
       v-loading="loading"
       element-loading-text="加载中..."
     >
+      <div class="switch">
+        <div class="switch-tip">点单元格复制记录</div>
+        <el-switch v-model="isOpenCopy" />
+      </div>
+
       <el-button
         type="primary"
         @click="goCheck"
@@ -324,5 +359,15 @@
 
   .no-data span {
     font-size: 16px;
+  }
+
+  .switch {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+
+    .switch-tip {
+      margin-right: 5px;
+    }
   }
 </style>
