@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-14 10:49
+ * @LastTime   : 2024-01-14 11:13
  * @desc       : 
 -->
 
@@ -41,7 +41,7 @@
   const loading = ref(false);
 
   // 是否开启邮件直接复制记录
-  const isOpenCopy = ref(false);
+  const copyModel = ref(false);
 
   onMounted(async () => {
     const { tableId, viewId } = await bitable.base.getSelection();
@@ -67,7 +67,7 @@
         }
       });
 
-      if (isOpenCopy.value) {
+      if (copyModel.value) {
         await table.addRecords([recordValue]);
       } else {
         let _index = recordTableList.value.findIndex((i) => i.id === _recordId);
@@ -144,91 +144,92 @@
   <div class="home">
     <div class="tips">
       <div class="tip">{{ $t('procedure') }}</div>
-      <div class="tip">
-        {{ $t('1') }}
-      </div>
-      <div class="tip">{{ $t('2') }}</div>
-      <div class="tip">{{ $t('3') }}</div>
-      <div class="tip">{{ $t('4') }}</div>
-      <div class="tip">{{ $t('t') }}</div>
+      <div class="tip">1. 选择【单击单元格】模式</div>
+      <div class="tip">2. 勾选记录: 点击记录任一单元格实现勾选至下方表格</div>
+      <div class="tip">3. 复制记录: 点击记录任一单元格即可复制</div>
     </div>
     <div
       v-loading="loading"
       :element-loading-text="$t('loading')"
     >
-      <div class="switch">
-        <div class="switch-tip">{{ $t('t1') }}</div>
-        <el-switch v-model="isOpenCopy" />
-      </div>
-
-      <div class="select">{{ $t('total', [recordTableList.length]) }}</div>
-      <div class="table">
-        <el-table
-          :data="recordTableList"
-          max-height="55vh"
-          :empty-text="$t('No data')"
-        >
-          <el-table-column
-            type="index"
-            width="55"
-          />
-
-          <el-table-column
-            :label="fieldName ? fieldName : ''"
-            style="width: 100%"
-          >
-            <template #default="scope">
-              <span
-                :title="scope.row.name"
-                class="fieldName"
-              >
-                {{ scope.row.name }}
-              </span>
-            </template>
-          </el-table-column>
-          <el-table-column
-            property="name"
-            :label="$t('operate')"
-            width="75"
-          >
-            <template #default="scope">
-              <el-button
-                size="small"
-                type="danger"
-                link
-                @click="handleDelete(scope.$index, scope.row.id)"
-                ><el-icon size="16"><Delete /></el-icon
-              ></el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-      <div class="label">
-        <div class="text">{{ $t('Copy model') }}</div>
-        <el-radio-group v-model="copyType">
-          <el-radio-button :label="1">{{ $t('single') }}</el-radio-button>
-          <el-radio-button :label="2">{{ $t('multi') }}</el-radio-button>
+      <div class="label mt">
+        <div class="text">单击单元格：</div>
+        <el-radio-group v-model="copyModel">
+          <el-radio-button :label="false">勾选记录</el-radio-button>
+          <el-radio-button :label="true">复制记录</el-radio-button>
         </el-radio-group>
       </div>
-      <div
-        class="label"
-        v-if="copyType === 2"
-      >
-        <div class="text">{{ $t('Number of copy') }}</div>
-        <el-input-number
-          v-model="copyNumber"
-          :min="1"
-          :max="1000"
-        />
-      </div>
 
-      <el-button
-        type="primary"
-        @click="confirm"
-      >
-        <el-icon><Aim /></el-icon>
-        <span>{{ $t('Confirm copy') }}</span>
-      </el-button>
+      <div v-if="!copyModel">
+        <div class="select">{{ $t('total', [recordTableList.length]) }}</div>
+        <div class="table">
+          <el-table
+            :data="recordTableList"
+            max-height="55vh"
+            :empty-text="$t('No data')"
+          >
+            <el-table-column
+              type="index"
+              width="55"
+            />
+
+            <el-table-column
+              :label="fieldName ? fieldName : ''"
+              style="width: 100%"
+            >
+              <template #default="scope">
+                <span
+                  :title="scope.row.name"
+                  class="fieldName"
+                >
+                  {{ scope.row.name }}
+                </span>
+              </template>
+            </el-table-column>
+            <el-table-column
+              property="name"
+              :label="$t('operate')"
+              width="75"
+            >
+              <template #default="scope">
+                <el-button
+                  size="small"
+                  type="danger"
+                  link
+                  @click="handleDelete(scope.$index, scope.row.id)"
+                  ><el-icon size="16"><Delete /></el-icon
+                ></el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div class="label">
+          <div class="text">{{ $t('Copy model') }}</div>
+          <el-radio-group v-model="copyType">
+            <el-radio-button :label="1">{{ $t('single') }}</el-radio-button>
+            <el-radio-button :label="2">{{ $t('multi') }}</el-radio-button>
+          </el-radio-group>
+        </div>
+        <div
+          class="label"
+          v-if="copyType === 2"
+        >
+          <div class="text">{{ $t('Number of copy') }}</div>
+          <el-input-number
+            v-model="copyNumber"
+            :min="1"
+            :max="1000"
+          />
+        </div>
+
+        <el-button
+          type="primary"
+          @click="confirm"
+        >
+          <el-icon><Aim /></el-icon>
+          <span>{{ $t('Confirm copy') }}</span>
+        </el-button>
+      </div>
     </div>
   </div>
 </template>
@@ -291,5 +292,9 @@
     .switch-tip {
       margin-right: 5px;
     }
+  }
+
+  .mt {
+    margin-top: 14px;
   }
 </style>
