@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-14 10:07
+ * @LastTime   : 2024-01-14 10:49
  * @desc       : 
 -->
 
@@ -48,32 +48,6 @@
     tableIdData = tableId;
     viewIdData = viewId;
 
-    bitable.base.onSelectionChange(async (event) => {
-      let _recordId = event.data.recordId;
-      if (!isOpenCopy.value) return;
-
-      const records = await table.getRecords({
-        pageSize: 5000,
-      });
-      records.records.forEach(async (item) => {
-        if (item.recordId === _recordId) {
-          // 查找引用、公式、自动编号的字段,无法直接复制需先删除
-          specialFieldList.value.forEach((fieldId) => {
-            // 使用 delete 操作符删除属性
-            if (item?.fields.hasOwnProperty(fieldId)) {
-              delete item?.fields[fieldId];
-            }
-          });
-
-          let recordValue = {
-            fields: item.fields,
-          };
-
-          await table.addRecords([recordValue]);
-        }
-      });
-    });
-
     table = await bitable.base.getActiveTable();
     const view = await table.getViewById(viewId);
 
@@ -81,87 +55,40 @@
     specialFieldList.value = fieldMetaList.filter((item) => [19, 20, 1005].includes(item.type)).map((item) => item.id);
     fieldId = fieldMetaList[0].id;
     fieldName.value = fieldMetaList[0].name;
-  });
 
-  async function goCheck() {
-    // recordTableList.value = [];
-    // recordValueList.value = [];
-
-    // 获取已选择的 recordIdList
-    let _listRecordId = await bitable.ui.selectRecordIdList(tableIdData, viewIdData);
-    loading.value = true;
-
-    if (_listRecordId.length === 0) {
-      loading.value = false;
-      return;
-    }
-
-    // 无勾选, 则保留上次记录
-    // if (_listRecord.length > 0) {
-    //   recordIdList.value = _listRecord;
-    // }
-
-    let _listRecord = [];
-    let _listTable = [];
-
-    const records = await table.getRecords({
-      pageSize: 5000,
-    });
-    records.records.forEach((item) => {
-      _listRecordId.forEach((recordId) => {
-        if (item.recordId === recordId) {
-          // 查找引用、公式、自动编号的字段,无法直接复制需先删除
-          specialFieldList.value.forEach((fieldId) => {
-            // 使用 delete 操作符删除属性
-            if (item?.fields.hasOwnProperty(fieldId)) {
-              delete item?.fields[fieldId];
-            }
-          });
-
-          let recordValue = {
-            fields: item.fields,
-          };
-
-          let id = recordId;
-          _listRecord.push({ ...recordValue, recordId: id });
-
-          if (recordValue?.fields[fieldId]) {
-            _listTable.push({
-              id,
-              name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
-            });
-          } else {
-            _listTable.push({
-              id,
-              name: t('First column not yet available'),
-            });
-          }
+    bitable.base.onSelectionChange(async (event) => {
+      let _recordId = event.data.recordId;
+      const recordValue = await table.getRecordById(_recordId);
+      // 查找引用、公式、自动编号的字段,无法直接复制需先删除
+      specialFieldList.value.forEach((fieldId) => {
+        // 使用 delete 操作符删除属性
+        if (recordValue?.fields.hasOwnProperty(fieldId)) {
+          delete recordValue?.fields[fieldId];
         }
       });
+
+      if (isOpenCopy.value) {
+        await table.addRecords([recordValue]);
+      } else {
+        let _index = recordTableList.value.findIndex((i) => i.id === _recordId);
+        if (_index !== -1) return;
+
+        recordValueList.value.push(recordValue);
+
+        if (recordValue?.fields[fieldId]) {
+          recordTableList.value.push({
+            id: _recordId,
+            name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
+          });
+        } else {
+          recordTableList.value.push({
+            id: _recordId,
+            name: t('First column not yet available'),
+          });
+        }
+      }
     });
-
-    // 无勾选, 则保留上次记录
-    if (_listRecord.length > 0) {
-      recordValueList.value = _listRecord;
-    }
-
-    // 无勾选, 则保留上次记录
-    if (_listTable.length > 0) {
-      // 用于表格展示
-      // recordTableList.value.push(..._listTable);
-
-      // 覆盖
-      recordTableList.value = _listTable;
-      ElMessage({
-        type: 'success',
-        message: t('Hooked up successfully'),
-        duration: 1500,
-        showClose: true,
-      });
-    }
-
-    loading.value = false;
-  }
+  });
 
   async function handleDelete(index, id) {
     // 删除表格和记录 list
@@ -234,13 +161,6 @@
         <el-switch v-model="isOpenCopy" />
       </div>
 
-      <el-button
-        type="primary"
-        @click="goCheck"
-      >
-        <el-icon><CircleCheck /></el-icon>
-        <span>{{ $t('Checking records') }}</span>
-      </el-button>
       <div class="select">{{ $t('total', [recordTableList.length]) }}</div>
       <div class="table">
         <el-table
