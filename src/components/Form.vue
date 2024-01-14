@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-14 11:13
+ * @LastTime   : 2024-01-14 11:44
  * @desc       : 
 -->
 
@@ -15,13 +15,6 @@
 
   useTheme();
 
-  const base = bitable.base;
-
-  const recordIdList = ref([]);
-
-  // 临时的记录 id
-  const templateRecordIdList = ref([]);
-
   const recordTableList = ref([]);
 
   const fieldName = ref();
@@ -30,8 +23,6 @@
   const recordValueList = ref([]);
 
   let table;
-  let tableIdData;
-  let viewIdData;
   let fieldId;
 
   // 特殊字段, 无法直接复制
@@ -44,9 +35,7 @@
   const copyModel = ref(false);
 
   onMounted(async () => {
-    const { tableId, viewId } = await bitable.base.getSelection();
-    tableIdData = tableId;
-    viewIdData = viewId;
+    const { viewId } = await bitable.base.getSelection();
 
     table = await bitable.base.getActiveTable();
     const view = await table.getViewById(viewId);
@@ -73,7 +62,10 @@
         let _index = recordTableList.value.findIndex((i) => i.id === _recordId);
         if (_index !== -1) return;
 
-        recordValueList.value.push(recordValue);
+        recordValueList.value.push({
+          recordValue,
+          id: _recordId,
+        });
 
         if (recordValue?.fields[fieldId]) {
           recordTableList.value.push({
@@ -93,7 +85,14 @@
   async function handleDelete(index, id) {
     // 删除表格和记录 list
     recordTableList.value = recordTableList.value.filter((item) => item.id !== id);
-    recordValueList.value = recordValueList.value.filter((item) => item.recordId !== id);
+    recordValueList.value = recordValueList.value.filter((item) => item.id !== id);
+
+    ElMessage({
+      type: 'success',
+      message: '删除成功',
+      duration: 1500,
+      showClose: true,
+    });
   }
 
   const copyType = ref(1);
@@ -123,10 +122,9 @@
     let _list = [];
     // 复制次数
     for (let i = 0; i < copyNumber.value; i++) {
-      await _list.push(...toRaw(recordValueList.value));
+      await _list.push(...recordValueList.value.map((item) => toRaw(item.recordValue)));
       // 新增数据;
     }
-
     await table.addRecords(_list);
 
     loading.value = false;
@@ -134,6 +132,36 @@
     ElMessage({
       type: 'success',
       message: t('Copy Success'),
+      duration: 1500,
+      showClose: true,
+    });
+  }
+
+  const selectViewIdList = ref([]);
+
+  const handleSelectionChange = (val) => {
+    selectViewIdList.value = val?.map((item) => item.id);
+  };
+
+  /**
+   * @desc  : 批量删除
+   */
+  async function batchDelete() {
+    if (selectViewIdList.value?.length === 0) {
+      ElMessage.warning('请先勾选记录！');
+      return;
+    }
+
+    // 假设 selectViewIdList.value 包含要删除的 id 列表
+    const idsToDelete = new Set(selectViewIdList.value);
+
+    recordTableList.value = recordTableList.value.filter((item) => !idsToDelete.has(item.id));
+
+    recordValueList.value = recordValueList.value.filter((item) => !idsToDelete.has(item.id));
+
+    ElMessage({
+      type: 'success',
+      message: '批量删除成功',
       duration: 1500,
       showClose: true,
     });
@@ -166,9 +194,16 @@
           <el-table
             :data="recordTableList"
             max-height="55vh"
+            @selection-change="handleSelectionChange"
             :empty-text="$t('No data')"
           >
             <el-table-column
+              type="selection"
+              width="30"
+            />
+
+            <el-table-column
+              label="序号"
               type="index"
               width="55"
             />
@@ -203,6 +238,16 @@
             </el-table-column>
           </el-table>
         </div>
+        <div class="delete-button">
+          <el-button
+            @click="batchDelete"
+            type="danger"
+            color="#F54A45"
+          >
+            <el-icon><Delete /></el-icon>
+            <span>批量删除</span>
+          </el-button>
+        </div>
         <div class="label">
           <div class="text">{{ $t('Copy model') }}</div>
           <el-radio-group v-model="copyType">
@@ -223,6 +268,7 @@
         </div>
 
         <el-button
+          class="confirm"
           type="primary"
           @click="confirm"
         >
@@ -235,13 +281,6 @@
 </template>
 
 <style scoped>
-  .home {
-  }
-
-  .tips {
-    /* margin-bottom: 10px; */
-  }
-
   .tip {
     font-size: 12px;
     color: #646a73;
@@ -255,7 +294,6 @@
   }
 
   .table {
-    /* height: 55vh; */
     margin-bottom: 10px;
   }
 
@@ -296,5 +334,13 @@
 
   .mt {
     margin-top: 14px;
+  }
+
+  .delete-button {
+    margin: 10px 0 14px 0;
+  }
+
+  .confirm {
+    margin-top: 10px;
   }
 </style>
