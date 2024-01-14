@@ -3,6 +3,9 @@
   "2": "2. 在下方表格中确认需要复制的记录无误",
   "3": "3. 选择【复制模式】，可设置复制次数（多次模式）",
   "4": "4. 点击【确认复制】按钮，完成复制操作",
+  "11": "1. 选择【单击单元格】模式",
+  "22": "2. 勾选记录: 点击记录任一单元格实现勾选至下方表格",
+  "33": "3. 复制记录: 点击记录任一单元格即可复制",
   "title": "标题",
   "First column not yet available": "【暂无首列数据】",
   "Hooked up successfully": "勾选成功",
@@ -21,5 +24,13 @@
   "total": "已选：{0} 条数据",
   "No data": "暂无数据",
   "first name": "首列名字",
-  "loading": "加载中..."
+  "loading": "加载中...",
+  "d1": "单击单元格：",
+  "Check record": "勾选记录",
+  "c1": "复制记录",
+  "b1": "批量删除",
+  "Deleted successfully": "删除成功",
+  "Please check the record first": "请先勾选记录！",
+  "Batch Delete Success": "批量删除成功",
+  "index": "序号"
 }

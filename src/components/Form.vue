@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-14 11:44
+ * @LastTime   : 2024-01-14 13:43
  * @desc       : 
 -->
 
@@ -89,7 +89,7 @@
 
     ElMessage({
       type: 'success',
-      message: '删除成功',
+      message: t('Deleted successfully'),
       duration: 1500,
       showClose: true,
     });
@@ -148,7 +148,7 @@
    */
   async function batchDelete() {
     if (selectViewIdList.value?.length === 0) {
-      ElMessage.warning('请先勾选记录！');
+      ElMessage.warning(t('Please check the record first'));
       return;
     }
 
@@ -161,7 +161,7 @@
 
     ElMessage({
       type: 'success',
-      message: '批量删除成功',
+      message: t('Batch Delete Success'),
       duration: 1500,
       showClose: true,
     });
@@ -172,19 +172,19 @@
   <div class="home">
     <div class="tips">
       <div class="tip">{{ $t('procedure') }}</div>
-      <div class="tip">1. 选择【单击单元格】模式</div>
-      <div class="tip">2. 勾选记录: 点击记录任一单元格实现勾选至下方表格</div>
-      <div class="tip">3. 复制记录: 点击记录任一单元格即可复制</div>
+      <div class="tip">{{ $t('11') }}</div>
+      <div class="tip">{{ $t('22') }}</div>
+      <div class="tip">{{ $t('33') }}</div>
     </div>
     <div
       v-loading="loading"
       :element-loading-text="$t('loading')"
     >
       <div class="label mt">
-        <div class="text">单击单元格：</div>
+        <div class="text">{{ $t('d1') }}</div>
         <el-radio-group v-model="copyModel">
-          <el-radio-button :label="false">勾选记录</el-radio-button>
-          <el-radio-button :label="true">复制记录</el-radio-button>
+          <el-radio-button :label="false">{{ $t('Check record') }}</el-radio-button>
+          <el-radio-button :label="true">{{ $t('c1') }}</el-radio-button>
         </el-radio-group>
       </div>
 
@@ -203,9 +203,9 @@
             />
 
             <el-table-column
-              label="序号"
+              :label="$t('index')"
               type="index"
-              width="55"
+              width="65"
             />
 
             <el-table-column
@@ -245,7 +245,7 @@
             color="#F54A45"
           >
             <el-icon><Delete /></el-icon>
-            <span>批量删除</span>
+            <span>{{ $t('b1') }}</span>
           </el-button>
         </div>
         <div class="label">
