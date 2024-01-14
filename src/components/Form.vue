@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-14 13:43
+ * @LastTime   : 2024-01-14 13:46
  * @desc       : 
 -->
 
@@ -47,6 +47,8 @@
 
     bitable.base.onSelectionChange(async (event) => {
       let _recordId = event.data.recordId;
+      if (!_recordId) return;
+
       const recordValue = await table.getRecordById(_recordId);
       // 查找引用、公式、自动编号的字段,无法直接复制需先删除
       specialFieldList.value.forEach((fieldId) => {
