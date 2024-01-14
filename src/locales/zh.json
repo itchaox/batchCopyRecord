@@ -1,3 +1,25 @@
 {
-  "title":"标题"
+  "1": "1. 点击【勾选记录】按钮，弹出窗口进行记录选择",
+  "2": "2. 在下方表格中确认需要复制的记录无误",
+  "3": "3. 选择【复制模式】，可设置复制次数（多次模式）",
+  "4": "4. 点击【确认复制】按钮，完成复制操作",
+  "title": "标题",
+  "First column not yet available": "【暂无首列数据】",
+  "Hooked up successfully": "勾选成功",
+  "Please check the data": "请勾选数据",
+  "Copy Success": "复制成功",
+  "procedure": "操作步骤:",
+  "t": "Tips: 开启【点单元格复制记录】,点记录任一单元格,即复制",
+  "t1": "点单元格复制记录",
+  "Checking records": "勾选记录",
+  "operate": "操作",
+  "Copy model": "复制模式：",
+  "single": "单次",
+  "multi": "多次",
+  "Number of copy": "复制次数：",
+  "Confirm copy": "确认复制",
+  "total": "已选：{0} 条数据",
+  "No data": "暂无数据",
+  "first name": "首列名字",
+  "loading": "加载中..."
 }

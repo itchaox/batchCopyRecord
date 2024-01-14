@@ -3,13 +3,15 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2023-12-26 01:12
+ * @LastTime   : 2024-01-14 10:07
  * @desc       : 
 -->
 
 <script setup lang="ts">
   import { bitable } from '@lark-base-open/js-sdk';
   import { useTheme } from '@/hooks/useTheme';
+  import { useI18n } from 'vue-i18n';
+  const { t } = useI18n();
 
   useTheme();
 
@@ -131,7 +133,7 @@
           } else {
             _listTable.push({
               id,
-              name: '【暂无首列数据】',
+              name: t('First column not yet available'),
             });
           }
         }
@@ -152,7 +154,7 @@
       recordTableList.value = _listTable;
       ElMessage({
         type: 'success',
-        message: '勾选成功',
+        message: t('Hooked up successfully'),
         duration: 1500,
         showClose: true,
       });
@@ -182,7 +184,7 @@
     if (recordValueList.value.length === 0) {
       ElMessage({
         type: 'warning',
-        message: '请勾选数据',
+        message: t('Please check the data'),
         duration: 1500,
         showClose: true,
       });
@@ -204,7 +206,7 @@
 
     ElMessage({
       type: 'success',
-      message: '复制成功',
+      message: t('Copy Success'),
       duration: 1500,
       showClose: true,
     });
@@ -214,19 +216,21 @@
 <template>
   <div class="home">
     <div class="tips">
-      <div class="tip">操作步骤:</div>
-      <div class="tip">1. 点击【勾选记录】按钮，弹出窗口进行记录选择</div>
-      <div class="tip">2. 在下方表格中确认需要复制的记录无误</div>
-      <div class="tip">3. 选择【复制模式】，可设置复制次数（多次模式）</div>
-      <div class="tip">4. 点击【确认复制】按钮，完成复制操作</div>
-      <div class="tip">Tips: 开启【点单元格复制记录】,点记录任一单元格,即复制</div>
+      <div class="tip">{{ $t('procedure') }}</div>
+      <div class="tip">
+        {{ $t('1') }}
+      </div>
+      <div class="tip">{{ $t('2') }}</div>
+      <div class="tip">{{ $t('3') }}</div>
+      <div class="tip">{{ $t('4') }}</div>
+      <div class="tip">{{ $t('t') }}</div>
     </div>
     <div
       v-loading="loading"
-      element-loading-text="加载中..."
+      :element-loading-text="$t('loading')"
     >
       <div class="switch">
-        <div class="switch-tip">点单元格复制记录</div>
+        <div class="switch-tip">{{ $t('t1') }}</div>
         <el-switch v-model="isOpenCopy" />
       </div>
 
@@ -235,23 +239,22 @@
         @click="goCheck"
       >
         <el-icon><CircleCheck /></el-icon>
-        <span>勾选记录</span>
+        <span>{{ $t('Checking records') }}</span>
       </el-button>
-      <div class="select">已选：{{ recordTableList.length }} 条数据</div>
+      <div class="select">{{ $t('total', [recordTableList.length]) }}</div>
       <div class="table">
         <el-table
           :data="recordTableList"
           max-height="55vh"
-          empty-text="暂无数据"
+          :empty-text="$t('No data')"
         >
           <el-table-column
             type="index"
-            label="序号"
             width="55"
           />
 
           <el-table-column
-            :label="fieldName ? fieldName : '首列名字'"
+            :label="fieldName ? fieldName : ''"
             style="width: 100%"
           >
             <template #default="scope">
@@ -265,8 +268,8 @@
           </el-table-column>
           <el-table-column
             property="name"
-            label="操作"
-            width="55"
+            :label="$t('operate')"
+            width="75"
           >
             <template #default="scope">
               <el-button
@@ -281,17 +284,17 @@
         </el-table>
       </div>
       <div class="label">
-        <div class="text">复制模式：</div>
+        <div class="text">{{ $t('Copy model') }}</div>
         <el-radio-group v-model="copyType">
-          <el-radio-button :label="1">单次</el-radio-button>
-          <el-radio-button :label="2">多次</el-radio-button>
+          <el-radio-button :label="1">{{ $t('single') }}</el-radio-button>
+          <el-radio-button :label="2">{{ $t('multi') }}</el-radio-button>
         </el-radio-group>
       </div>
       <div
         class="label"
         v-if="copyType === 2"
       >
-        <div class="text">复制次数：</div>
+        <div class="text">{{ $t('Number of copy') }}</div>
         <el-input-number
           v-model="copyNumber"
           :min="1"
@@ -304,7 +307,7 @@
         @click="confirm"
       >
         <el-icon><Aim /></el-icon>
-        <span>确认复制</span>
+        <span>{{ $t('Confirm copy') }}</span>
       </el-button>
     </div>
   </div>
@@ -341,7 +344,6 @@
     margin-bottom: 12px;
 
     .text {
-      width: 70px;
       margin-right: 10px;
       white-space: nowrap;
       font-size: 14px;

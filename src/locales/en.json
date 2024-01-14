@@ -1,3 +1,25 @@
 {
-  "title":"title"
+  "1": "1. Click the [Check Record] button to bring up a pop-up window for record selection.",
+  "2": "2. Confirm that the records to be copied are correct in the table below.",
+  "3": "3. Select [Copy Mode] to set the number of copies (Multiple Mode)",
+  "4": "4. Click the [Confirm Copy] button to complete the copying operation.",
+  "title": "title",
+  "First column not yet available": "First column not yet available",
+  "Hooked up successfully": "Hooked up successfully",
+  "Please check the data": "Please check the data",
+  "Copy Success": "Copy Success",
+  "procedure": "Procedure:",
+  "t": "Tips: open the [point cell copy records], point record any cell, that is, copy the",
+  "t1": "Tap a cell to copy the record",
+  "Checking records": "Checking records",
+  "operate": "operate",
+  "Copy model": "Copy model:",
+  "single": "Single",
+  "multi": "Multi",
+  "Number of copy": "Number of copy:",
+  "Confirm copy": "Confirm copy",
+  "total": "Selected: {0} data",
+  "No data": "No data",
+  "first name": "first name",
+  "loading": "Loading"
 }
