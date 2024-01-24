@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-14 13:46
+ * @LastTime   : 2024-01-25 01:22
  * @desc       : 
 -->
 
@@ -12,6 +12,8 @@
   import { useTheme } from '@/hooks/useTheme';
   import { useI18n } from 'vue-i18n';
   const { t } = useI18n();
+
+  import { ViewGridDetail } from '@icon-park/vue-next';
 
   useTheme();
 
@@ -34,10 +36,13 @@
   // 是否开启邮件直接复制记录
   const copyModel = ref(false);
 
+  const tableId = ref();
+
   onMounted(async () => {
     const { viewId } = await bitable.base.getSelection();
 
     table = await bitable.base.getActiveTable();
+    tableId.value = table.id;
     const view = await table.getViewById(viewId);
 
     const fieldMetaList = await view.getFieldMetaList();
@@ -168,6 +173,10 @@
       showClose: true,
     });
   }
+
+  async function handleDetail(recordId) {
+    await bitable.ui.showRecordDetailDialog({ tableId: tableId.value, recordId });
+  }
 </script>
 
 <template>
@@ -227,15 +236,34 @@
               property="name"
               :label="$t('operate')"
               width="75"
+              align="center"
             >
               <template #default="scope">
-                <el-button
-                  size="small"
-                  type="danger"
-                  link
-                  @click="handleDelete(scope.$index, scope.row.id)"
-                  ><el-icon size="16"><Delete /></el-icon
-                ></el-button>
+                <div class="btns">
+                  <el-button
+                    size="small"
+                    link
+                    @click="handleDetail(scope.row.id)"
+                    :title="$t('View Details')"
+                  >
+                    <!-- <el-icon size="16"><Edit /></el-icon
+                  > -->
+
+                    <ViewGridDetail
+                      theme="outline"
+                      size="20"
+                      fill="#333"
+                    />
+                  </el-button>
+                  <el-button
+                    :title="$t('Detele')"
+                    size="small"
+                    type="danger"
+                    link
+                    @click="handleDelete(scope.$index, scope.row.id)"
+                    ><el-icon size="20"><Delete /></el-icon
+                  ></el-button>
+                </div>
               </template>
             </el-table-column>
           </el-table>
@@ -344,5 +372,10 @@
 
   .confirm {
     margin-top: 10px;
+  }
+
+  .btns {
+    display: flex;
+    align-items: center;
   }
 </style>

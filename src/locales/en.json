@@ -32,5 +32,7 @@
   "Deleted successfully": "Deleted successfully",
   "Please check the record first": "Please check the record first!",
   "Batch Delete Success": "Batch Delete Success",
-  "index": "index"
+  "index": "index",
+  "View Details": "View Details",
+  "Detele": "Delete"
 }
