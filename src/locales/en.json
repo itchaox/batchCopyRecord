@@ -34,5 +34,6 @@
   "Batch Delete Success": "Batch Delete Success",
   "index": "index",
   "View Details": "View Details",
-  "Detele": "Delete"
+  "Detele": "Delete",
+  "open": "openPlugin:"
 }

@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : itchaox
- * @LastTime   : 2024-01-25 01:22
+ * @LastTime   : 2024-01-27 11:45
  * @desc       : 
 -->
 
@@ -51,6 +51,8 @@
     fieldName.value = fieldMetaList[0].name;
 
     bitable.base.onSelectionChange(async (event) => {
+      if (!isOpenPlugin.value) return;
+
       let _recordId = event.data.recordId;
       if (!_recordId) return;
 
@@ -177,6 +179,8 @@
   async function handleDetail(recordId) {
     await bitable.ui.showRecordDetailDialog({ tableId: tableId.value, recordId });
   }
+
+  const isOpenPlugin = ref(true);
 </script>
 
 <template>
@@ -191,121 +195,134 @@
       v-loading="loading"
       :element-loading-text="$t('loading')"
     >
-      <div class="label mt">
-        <div class="text">{{ $t('d1') }}</div>
-        <el-radio-group v-model="copyModel">
-          <el-radio-button :label="false">{{ $t('Check record') }}</el-radio-button>
-          <el-radio-button :label="true">{{ $t('c1') }}</el-radio-button>
-        </el-radio-group>
+      <div class="label openPlugin">
+        <div class="text">{{ $t('open') }}</div>
+        <el-switch v-model="isOpenPlugin" />
       </div>
 
-      <div v-if="!copyModel">
-        <div class="select">{{ $t('total', [recordTableList.length]) }}</div>
-        <div class="table">
-          <el-table
-            :data="recordTableList"
-            max-height="55vh"
-            @selection-change="handleSelectionChange"
-            :empty-text="$t('No data')"
-          >
-            <el-table-column
-              type="selection"
-              width="30"
-            />
-
-            <el-table-column
-              :label="$t('index')"
-              type="index"
-              width="65"
-            />
-
-            <el-table-column
-              :label="fieldName ? fieldName : ''"
-              style="width: 100%"
-            >
-              <template #default="scope">
-                <span
-                  :title="scope.row.name"
-                  class="fieldName"
-                >
-                  {{ scope.row.name }}
-                </span>
-              </template>
-            </el-table-column>
-            <el-table-column
-              property="name"
-              :label="$t('operate')"
-              width="75"
-              align="center"
-            >
-              <template #default="scope">
-                <div class="btns">
-                  <el-button
-                    size="small"
-                    link
-                    @click="handleDetail(scope.row.id)"
-                    :title="$t('View Details')"
-                  >
-                    <!-- <el-icon size="16"><Edit /></el-icon
-                  > -->
-
-                    <ViewGridDetail
-                      theme="outline"
-                      size="20"
-                      fill="#333"
-                    />
-                  </el-button>
-                  <el-button
-                    :title="$t('Detele')"
-                    size="small"
-                    type="danger"
-                    link
-                    @click="handleDelete(scope.$index, scope.row.id)"
-                    ><el-icon size="20"><Delete /></el-icon
-                  ></el-button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-        <div class="delete-button">
-          <el-button
-            @click="batchDelete"
-            type="danger"
-            color="#F54A45"
-          >
-            <el-icon><Delete /></el-icon>
-            <span>{{ $t('b1') }}</span>
-          </el-button>
-        </div>
-        <div class="label">
-          <div class="text">{{ $t('Copy model') }}</div>
-          <el-radio-group v-model="copyType">
-            <el-radio-button :label="1">{{ $t('single') }}</el-radio-button>
-            <el-radio-button :label="2">{{ $t('multi') }}</el-radio-button>
+      <template v-if="isOpenPlugin">
+        <div class="label mt">
+          <div class="text">{{ $t('d1') }}</div>
+          <el-radio-group v-model="copyModel">
+            <el-radio-button :label="false">{{ $t('Check record') }}</el-radio-button>
+            <el-radio-button :label="true">{{ $t('c1') }}</el-radio-button>
           </el-radio-group>
         </div>
-        <div
-          class="label"
-          v-if="copyType === 2"
-        >
-          <div class="text">{{ $t('Number of copy') }}</div>
-          <el-input-number
-            v-model="copyNumber"
-            :min="1"
-            :max="1000"
-          />
-        </div>
 
-        <el-button
-          class="confirm"
-          type="primary"
-          @click="confirm"
-        >
-          <el-icon><Aim /></el-icon>
-          <span>{{ $t('Confirm copy') }}</span>
-        </el-button>
-      </div>
+        <div v-if="!copyModel">
+          <div
+            class="select"
+            v-if="recordTableList.length > 0"
+          >
+            {{ $t('total', [recordTableList.length]) }}
+          </div>
+          <div class="table">
+            <el-table
+              :data="recordTableList"
+              max-height="50vh"
+              @selection-change="handleSelectionChange"
+              :empty-text="$t('No data')"
+            >
+              <el-table-column
+                v-if="recordTableList.length > 0"
+                type="selection"
+                width="30"
+              />
+
+              <el-table-column
+                :label="$t('index')"
+                type="index"
+                width="65"
+              />
+
+              <el-table-column
+                :label="fieldName ? fieldName : ''"
+                style="width: 100%"
+              >
+                <template #default="scope">
+                  <span
+                    :title="scope.row.name"
+                    class="fieldName"
+                  >
+                    {{ scope.row.name }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                property="name"
+                :label="$t('operate')"
+              >
+                <template #default="scope">
+                  <div class="btns">
+                    <el-button
+                      link
+                      @click="handleDetail(scope.row.id)"
+                      :title="$t('View Details')"
+                    >
+                      <ViewGridDetail
+                        theme="outline"
+                        size="20"
+                        fill="#333"
+                      />
+                    </el-button>
+                    <el-button
+                      :title="$t('Detele')"
+                      type="danger"
+                      link
+                      @click="handleDelete(scope.$index, scope.row.id)"
+                      ><el-icon size="20"><Delete /></el-icon
+                    ></el-button>
+                  </div>
+                </template>
+              </el-table-column>
+            </el-table>
+          </div>
+          <div
+            class="delete-button"
+            v-if="recordTableList.length > 0"
+          >
+            <el-button
+              @click="batchDelete"
+              type="danger"
+              color="#F54A45"
+            >
+              <el-icon><Delete /></el-icon>
+              <span>{{ $t('b1') }}</span>
+            </el-button>
+          </div>
+          <div
+            class="label"
+            v-if="recordTableList.length > 0"
+          >
+            <div class="text">{{ $t('Copy model') }}</div>
+            <el-radio-group v-model="copyType">
+              <el-radio-button :label="1">{{ $t('single') }}</el-radio-button>
+              <el-radio-button :label="2">{{ $t('multi') }}</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div
+            class="label"
+            v-if="copyType === 2 && recordTableList.length > 0"
+          >
+            <div class="text">{{ $t('Number of copy') }}</div>
+            <el-input-number
+              v-model="copyNumber"
+              :min="1"
+              :max="1000"
+            />
+          </div>
+
+          <el-button
+            v-if="recordTableList.length > 0"
+            class="confirm"
+            type="primary"
+            @click="confirm"
+          >
+            <el-icon><Aim /></el-icon>
+            <span>{{ $t('Confirm copy') }}</span>
+          </el-button>
+        </div>
+      </template>
     </div>
   </div>
 </template>
@@ -363,7 +380,12 @@
   }
 
   .mt {
-    margin-top: 14px;
+    /* margin-top: 14px; */
+    /* margin-top: 4px; */
+  }
+
+  .openPlugin {
+    margin: 0 0 14px 0 !important;
   }
 
   .delete-button {
