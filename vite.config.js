@@ -19,6 +19,7 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
   server: {
     host: true,
     hmr: true, //启动热更新，就是更改了代码自动刷新页面
