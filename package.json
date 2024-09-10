@@ -10,7 +10,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
     "@icon-park/vue-next": "^1.4.2",
-    "@lark-base-open/js-sdk": "0.3.6",
+    "@lark-base-open/js-sdk": "0.3.8",
     "axios": "^1.6.2",
     "element-plus": "^2.3.6",
     "reset-css": "^5.0.1",

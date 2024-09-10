@@ -2,8 +2,8 @@
  * @Version    : v1.00
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
- * @LastAuthor : itchaox
- * @LastTime   : 2024-01-27 11:45
+ * @LastAuthor : Wang Chao
+ * @LastTime   : 2024-09-10 14:25
  * @desc       : 
 -->
 
@@ -26,6 +26,7 @@
 
   let table;
   let fieldId;
+  let view;
 
   // 特殊字段, 无法直接复制
   // 19 查找引用; 20 公式; 1005 自动编号
@@ -33,7 +34,7 @@
 
   const loading = ref(false);
 
-  // 是否开启邮件直接复制记录
+  // 是否开启右键直接复制记录
   const copyModel = ref(false);
 
   const tableId = ref();
@@ -43,7 +44,7 @@
 
     table = await bitable.base.getActiveTable();
     tableId.value = table.id;
-    const view = await table.getViewById(viewId);
+    view = await table.getViewById(viewId);
 
     const fieldMetaList = await view.getFieldMetaList();
     specialFieldList.value = fieldMetaList.filter((item) => [19, 20, 1005].includes(item.type)).map((item) => item.id);
@@ -181,6 +182,54 @@
   }
 
   const isOpenPlugin = ref(true);
+
+  // 获取选中的所有记录
+  async function getAllRecord() {
+    try {
+      const recordIds = await view.getSelectedRecordIdList();
+
+      for (const recordId of recordIds) {
+        let _recordId = recordId;
+        if (!_recordId) break;
+
+        const recordValue = await table.getRecordById(_recordId);
+
+        // 查找引用、公式、自动编号的字段,无法直接复制需先删除
+        specialFieldList.value.forEach((fieldId) => {
+          // 使用 delete 操作符删除属性
+          if (recordValue?.fields.hasOwnProperty(fieldId)) {
+            delete recordValue?.fields[fieldId];
+          }
+        });
+
+        if (copyModel.value) {
+          await table.addRecords([recordValue]);
+        } else {
+          let _index = recordTableList.value.findIndex((i) => i.id === _recordId);
+          if (_index === -1) {
+            recordValueList.value.push({
+              recordValue,
+              id: _recordId,
+            });
+
+            if (recordValue?.fields[fieldId]) {
+              recordTableList.value.push({
+                id: _recordId,
+                name: recordValue.fields[fieldId]?.text || recordValue.fields[fieldId][0]?.text,
+              });
+            } else {
+              recordTableList.value.push({
+                id: _recordId,
+                name: t('First column not yet available'),
+              });
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  }
 </script>
 
 <template>
@@ -198,6 +247,18 @@
       <div class="label openPlugin">
         <div class="text">{{ $t('open') }}</div>
         <el-switch v-model="isOpenPlugin" />
+      </div>
+      <div
+        class="all-record"
+        v-if="isOpenPlugin"
+      >
+        <el-button
+          type="primary"
+          @click="getAllRecord"
+        >
+          <el-icon><Plus /></el-icon>
+          <span>{{ $t('huo-qu-zuo-ce-xuan-zhong-de-suo-you-ji-lu') }}</span>
+        </el-button>
       </div>
 
       <template v-if="isOpenPlugin">
@@ -259,11 +320,7 @@
                       @click="handleDetail(scope.row.id)"
                       :title="$t('View Details')"
                     >
-                      <ViewGridDetail
-                        theme="outline"
-                        size="20"
-                        fill="#333"
-                      />
+                      <el-icon size="20"><Memo /></el-icon>
                     </el-button>
                     <el-button
                       :title="$t('Detele')"
@@ -318,7 +375,7 @@
             type="primary"
             @click="confirm"
           >
-            <el-icon><Aim /></el-icon>
+            <el-icon><Check /></el-icon>
             <span>{{ $t('Confirm copy') }}</span>
           </el-button>
         </div>
@@ -347,7 +404,7 @@
   .label {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
+    /* margin-bottom: 12px; */
 
     .text {
       margin-right: 10px;
@@ -385,7 +442,11 @@
   }
 
   .openPlugin {
-    margin: 0 0 14px 0 !important;
+    /* margin: 0 0 14px 0 !important; */
+  }
+
+  .all-record {
+    margin: 10px 0;
   }
 
   .delete-button {
