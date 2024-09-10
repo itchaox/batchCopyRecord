@@ -3,7 +3,7 @@
  * @Author     : itchaox
  * @Date       : 2023-12-23 09:34
  * @LastAuthor : Wang Chao
- * @LastTime   : 2024-09-10 14:25
+ * @LastTime   : 2024-09-10 14:30
  * @desc       : 
 -->
 
@@ -404,7 +404,7 @@
   .label {
     display: flex;
     align-items: center;
-    /* margin-bottom: 12px; */
+    margin-bottom: 12px;
 
     .text {
       margin-right: 10px;
